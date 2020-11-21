@@ -1,0 +1,15 @@
+# GVAR-Ingestor configuration
+
+# SDR Settings
+radio:
+  device: "driver=airspy" # SoapySDR device string
+  frequency: 1685700000 # EWS-G1 (GOES-13) Frequency
+  sample_rate: 6000000 # Samplerate. Has to be >= 2.11MSPS
+  gain: 40 # SDR Gain, an integer
+  biastee: true
+
+# Data director to save the pictures in
+data_directory: GVAR_DATA
+
+# Write demodulated data to pdr.bin (debugging only, ignore otherwise)
+write_demod_bin: false
