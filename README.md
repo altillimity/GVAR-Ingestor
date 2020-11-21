@@ -2,7 +2,9 @@
 
 A program to receive and decode GVAR from older GOES satellites, more precisely EWS-G1 currently covering the indian ocean area, broadcasting imagery in L-Band on the GVAR downlink.
 
-The downlink's frequency is 1685.7Mhz.
+The downlink's frequency is 1685.7Mhz.   
+
+***Huge thanks to @ZSztanga who made all of this possible by testing and providing all the data!***
 
 **This software is still in beta, so bugs and potential instabilities are to be expected**
 
