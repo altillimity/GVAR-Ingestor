@@ -82,7 +82,7 @@ make -j2
 sudo make install
 cd ../..
 git clone https://github.com/altillimity/GVAR-Ingestor.git
-cd S-VISSR-Decoder
+cd GVAR-Ingestor
 mkdir build && cd build
 cmake ..
 make -j2
