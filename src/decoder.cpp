@@ -37,7 +37,7 @@ void GVARDecoder::writeFullDisks()
     std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
                             std::to_string(timeReadable->tm_mon + 1) + "-" +
                             std::to_string(timeReadable->tm_mday) + "_" +
-                            std::to_string(timeReadable->tm_hour) + ":" +
+                            std::to_string(timeReadable->tm_hour) + "-" +
                             (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min));
 
     std::this_thread::sleep_for(std::chrono::seconds(5)); // Wait a bit
@@ -45,6 +45,7 @@ void GVARDecoder::writeFullDisks()
 
     std::filesystem::create_directory(output_folder + "/GVAR_" + timestamp);
 
+    std::cout << "Resizing..." << std::endl;
     image1.resize(image1.width(), image1.height() * 1.75);
     image2.resize(image2.width(), image2.height() * 1.75);
     image3.resize(image3.width(), image3.height() * 1.75);
