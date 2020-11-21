@@ -26,7 +26,11 @@ target_link_libraries(GVAR-Ingestor PUBLIC ${SOAPY_SDR_LIBRARY})
 
 find_package(yaml-cpp REQUIRED)
 target_include_directories(GVAR-Ingestor PUBLIC ${YAML_CPP_INCLUDE_DIR})
-target_link_libraries(GVAR-Ingestor PUBLIC ${YAML_CPP_LIBRARIES}"yaml-cpp")
+if(MINGW)
+    target_link_libraries(GVAR-Ingestor PUBLIC ${YAML_CPP_LIBRARIES}"yaml-cpp")
+else()
+    target_link_libraries(GVAR-Ingestor PUBLIC "yaml-cpp")
+endif()
 
 find_library(DSP_LIBRARY dsp REQUIRED)
 target_link_libraries(GVAR-Ingestor PUBLIC ${DSP_LIBRARY})
