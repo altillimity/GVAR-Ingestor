@@ -4,7 +4,7 @@ A program to receive and decode GVAR from older GOES satellites, more precisely 
 
 The downlink's frequency is 1685.7Mhz.   
 
-***Huge thanks to @ZSztanga who made all of this possible by testing and providing all the data!***
+***Huge thanks to @ZSztanga who made all of this possible by testing and providing all the data! Wouldn't have been possible without his immense help.***
 
 **This software is still in beta, so bugs and potential instabilities are to be expected**
 
