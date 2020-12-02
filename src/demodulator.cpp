@@ -23,26 +23,6 @@ GVARDemodulator::GVARDemodulator(int samplerate, bool enableThreading) : sampler
         recovery_buffer2 = new std::complex<float>[8192];
         recovery_buffer3 = new std::complex<float>[8192];
 
-        sdr_pipe = pipe_new(sizeof(std::complex<float>), 8192 * 10);
-        sdr_pipe_producer = pipe_producer_new(sdr_pipe);
-        sdr_pipe_consumer = pipe_consumer_new(sdr_pipe);
-
-        agc_pipe = pipe_new(sizeof(std::complex<float>), 8192 * 10);
-        agc_pipe_producer = pipe_producer_new(agc_pipe);
-        agc_pipe_consumer = pipe_consumer_new(agc_pipe);
-
-        rrc_pipe = pipe_new(sizeof(std::complex<float>), 8192 * 10);
-        rrc_pipe_producer = pipe_producer_new(rrc_pipe);
-        rrc_pipe_consumer = pipe_consumer_new(rrc_pipe);
-
-        costas_pipe = pipe_new(sizeof(std::complex<float>), 8192 * 10);
-        costas_pipe_producer = pipe_producer_new(costas_pipe);
-        costas_pipe_consumer = pipe_consumer_new(costas_pipe);
-
-        recovery_pipe = pipe_new(sizeof(std::complex<float>), 8192 * 10);
-        recovery_pipe_producer = pipe_producer_new(recovery_pipe);
-        recovery_pipe_consumer = pipe_consumer_new(recovery_pipe);
-
         agcRun = true;
         rrcRun = true;
         costasRun = true;
@@ -63,44 +43,28 @@ void GVARDemodulator::stop()
     {
         // Exit all threads... Without causing a race condition!
         agcRun = false;
-
-        pipe_producer_free(sdr_pipe_producer);
-        pipe_consumer_free(sdr_pipe_consumer);
-        pipe_free(sdr_pipe);
+        agc_pipe.~Pipe();
 
         if (agcThread.joinable())
             agcThread.join();
 
         rrcRun = false;
-
-        pipe_producer_free(agc_pipe_producer);
-        pipe_consumer_free(agc_pipe_consumer);
-        pipe_free(agc_pipe);
+        rrc_pipe.~Pipe();
 
         if (rrcThread.joinable())
             rrcThread.join();
 
         costasRun = false;
-
-        pipe_producer_free(rrc_pipe_producer);
-        pipe_consumer_free(rrc_pipe_consumer);
-        pipe_free(rrc_pipe);
+        costas_pipe.~Pipe();
 
         if (costasThread.joinable())
             costasThread.join();
 
         recoveryRun = false;
-
-        pipe_producer_free(costas_pipe_producer);
-        pipe_consumer_free(costas_pipe_consumer);
-        pipe_free(costas_pipe);
+        recovery_pipe.~Pipe();
 
         if (recoveryThread.joinable())
             recoveryThread.join();
-
-        pipe_producer_free(recovery_pipe_producer);
-        pipe_consumer_free(recovery_pipe_consumer);
-        pipe_free(recovery_pipe);
     }
 
     stopped = true;
@@ -150,12 +114,15 @@ void volk_32f_binary_slicer_8i_generic(int8_t *cVector, const float *aVector, un
 
 void GVARDemodulator::pushMultiThread(std::complex<float> *in_samples, int length)
 {
-    pipe_push(sdr_pipe_producer, in_samples, length);
+    sdr_pipe.push(in_samples, length);
 }
 
 int GVARDemodulator::pullMultiThread(uint8_t *out_samples)
 {
-    int recovery_count = pipe_pop(recovery_pipe_consumer, recovery_buffer3, 1024);
+    int recovery_count = recovery_pipe.pop(recovery_buffer3, 1024);
+
+    if (recovery_count <= 0)
+        return 0;
 
     // Convert to real (BPSK)
     complexToReal.work(recovery_buffer3, recovery_count, recovery_real_buffer);
@@ -195,9 +162,11 @@ void GVARDemodulator::agcThreadFunc()
 {
     while (agcRun)
     {
-        int num = pipe_pop(sdr_pipe_consumer, agc_buffer, 8192);
+        int num = sdr_pipe.pop(agc_buffer, 8192);
+        if (num <= 0)
+            continue;
         agc.work(agc_buffer, num, agc_buffer2);
-        pipe_push(agc_pipe_producer, agc_buffer2, num);
+        agc_pipe.push(agc_buffer2, num);
     }
 }
 
@@ -205,9 +174,11 @@ void GVARDemodulator::rrcThreadFunc()
 {
     while (rrcRun)
     {
-        int num = pipe_pop(agc_pipe_consumer, filter_buffer, 8192);
+        int num = agc_pipe.pop(filter_buffer, 8192);
+        if (num <= 0)
+            continue;
         int rrc_samples = rrcFilter.work(filter_buffer, num, filter_buffer2);
-        pipe_push(rrc_pipe_producer, filter_buffer2, rrc_samples);
+        rrc_pipe.push(filter_buffer2, rrc_samples);
     }
 }
 
@@ -215,9 +186,11 @@ void GVARDemodulator::costasThreadFunc()
 {
     while (costasRun)
     {
-        int num = pipe_pop(rrc_pipe_consumer, costas_buffer, 8192);
+        int num = rrc_pipe.pop(costas_buffer, 8192);
+        if (num <= 0)
+            continue;
         int costas_samples = costasLoop.work(costas_buffer, num, costas_buffer2);
-        pipe_push(costas_pipe_producer, costas_buffer2, costas_samples);
+        costas_pipe.push(costas_buffer2, costas_samples);
     }
 }
 
@@ -225,8 +198,10 @@ void GVARDemodulator::recoveryThreadFunc()
 {
     while (recoveryRun)
     {
-        int num = pipe_pop(costas_pipe_consumer, recovery_buffer, 8192);
+        int num = costas_pipe.pop(recovery_buffer, 8192);
+        if (num <= 0)
+            continue;
         int recovery_samples = clockRecoveryMM.work(recovery_buffer, num, recovery_buffer2);
-        pipe_push(recovery_pipe_producer, recovery_buffer2, recovery_samples);
+        recovery_pipe.push(recovery_buffer2, recovery_samples);
     }
 }

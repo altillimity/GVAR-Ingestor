@@ -3,13 +3,13 @@
 #include <thread>
 #include <complex>
 #include <dsp/agc.h>
+#include <dsp/pipe.h>
 #include <dsp/fir_filter.h>
 #include <dsp/fir_gen.h>
 #include <dsp/costas_loop.h>
 #include <dsp/clock_recovery_mm.h>
 #include <dsp/complex_to_real.h>
 #include "processing/repack_bits_byte.h"
-#include "processing/pipe.h"
 
 class GVARDemodulator
 {
@@ -41,25 +41,11 @@ private:
     uint8_t *recovery_byte_buffer;
 
     // Piping stuff if we need it
-    pipe_t *sdr_pipe;
-    pipe_producer_t *sdr_pipe_producer;
-    pipe_consumer_t *sdr_pipe_consumer;
-
-    pipe_t *agc_pipe;
-    pipe_producer_t *agc_pipe_producer;
-    pipe_consumer_t *agc_pipe_consumer;
-
-    pipe_t *rrc_pipe;
-    pipe_producer_t *rrc_pipe_producer;
-    pipe_consumer_t *rrc_pipe_consumer;
-
-    pipe_t *costas_pipe;
-    pipe_producer_t *costas_pipe_producer;
-    pipe_consumer_t *costas_pipe_consumer;
-
-    pipe_t *recovery_pipe;
-    pipe_producer_t *recovery_pipe_producer;
-    pipe_consumer_t *recovery_pipe_consumer;
+    libdsp::Pipe<std::complex<float>> sdr_pipe;
+    libdsp::Pipe<std::complex<float>> agc_pipe;
+    libdsp::Pipe<std::complex<float>> rrc_pipe;
+    libdsp::Pipe<std::complex<float>> costas_pipe;
+    libdsp::Pipe<std::complex<float>> recovery_pipe;
 
     // Threading
     std::thread agcThread, rrcThread, costasThread, recoveryThread;
