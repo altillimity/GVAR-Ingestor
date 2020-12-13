@@ -92,5 +92,7 @@ sudo make install
 Windows binaries are available in the repository with support for the following SDRs :
 - Airspy
 - RTL-SDR
+- LimeSDR
+- LimeSDR Mini
    
 If you need support for something else on Windows, feel free to open an issue and I will add it.
