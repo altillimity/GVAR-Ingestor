@@ -30,20 +30,34 @@ GVARDecoder::~GVARDecoder()
     delete[] processing_buffer;
 }
 
+std::string getGvarFilename(std::tm *timeReadable, int channel)
+{
+    std::string utc_filename = "EWS-G1_" + std::to_string(channel) + "_" +                                                                                  // Satellite name and channel
+                               std::to_string(timeReadable->tm_year + 1900) +                                                                               // Year yyyy
+                               (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + // Month MM
+                               (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "T" +    // Day dd
+                               (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) +          // Hour HH
+                               (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min)) +             // Minutes mm
+                               (timeReadable->tm_sec > 9 ? std::to_string(timeReadable->tm_sec) : "0" + std::to_string(timeReadable->tm_sec)) + "Z";        // Seconds ss
+    return utc_filename;
+}
+
 void GVARDecoder::writeFullDisks()
 {
     const time_t timevalue = time(0);
     std::tm *timeReadable = gmtime(&timevalue);
     std::string timestamp = std::to_string(timeReadable->tm_year + 1900) + "-" +
-                            std::to_string(timeReadable->tm_mon + 1) + "-" +
-                            std::to_string(timeReadable->tm_mday) + "_" +
-                            std::to_string(timeReadable->tm_hour) + "-" +
+                            (timeReadable->tm_mon + 1 > 9 ? std::to_string(timeReadable->tm_mon + 1) : "0" + std::to_string(timeReadable->tm_mon + 1)) + "-" +
+                            (timeReadable->tm_mday > 9 ? std::to_string(timeReadable->tm_mday) : "0" + std::to_string(timeReadable->tm_mday)) + "_" +
+                            (timeReadable->tm_hour > 9 ? std::to_string(timeReadable->tm_hour) : "0" + std::to_string(timeReadable->tm_hour)) + "-" +
                             (timeReadable->tm_min > 9 ? std::to_string(timeReadable->tm_min) : "0" + std::to_string(timeReadable->tm_min));
 
     std::this_thread::sleep_for(std::chrono::seconds(5)); // Wait a bit
     std::cout << "Full disk finished, saving at GVAR_" + timestamp + "..." << std::endl;
 
     std::filesystem::create_directory(output_folder + "/GVAR_" + timestamp);
+
+    std::string disk_folder = output_folder + "/GVAR_" + timestamp;
 
     std::cout << "Resizing..." << std::endl;
     image1.resize(image1.width(), image1.height() * 1.75);
@@ -52,20 +66,20 @@ void GVARDecoder::writeFullDisks()
     image4.resize(image4.width(), image4.height() * 1.75);
     image5.resize(image5.width(), image5.height() * 1.75);
 
-    std::cout << "Channel 1..." << std::endl;
-    image1.save_png(std::string(output_folder + "/GVAR_" + timestamp + "/IR-1.png").c_str());
+    std::cout << "Channel 1... " + getGvarFilename(timeReadable, 1) + ".png" << std::endl;
+    image5.save_png(std::string(disk_folder + "/" + getGvarFilename(timeReadable, 1) + ".png").c_str());
 
-    std::cout << "Channel 2..." << std::endl;
-    image2.save_png(std::string(output_folder + "/GVAR_" + timestamp + "/IR-2.png").c_str());
+    std::cout << "Channel 2... " + getGvarFilename(timeReadable, 2) + ".png" << std::endl;
+    image1.save_png(std::string(disk_folder + "/" + getGvarFilename(timeReadable, 2) + ".png").c_str());
 
-    std::cout << "Channel 3..." << std::endl;
-    image3.save_png(std::string(output_folder + "/GVAR_" + timestamp + "/IR-3.png").c_str());
+    std::cout << "Channel 3... " + getGvarFilename(timeReadable, 3) + ".png" << std::endl;
+    image2.save_png(std::string(disk_folder + "/" + getGvarFilename(timeReadable, 3) + ".png").c_str());
 
-    std::cout << "Channel 4..." << std::endl;
-    image4.save_png(std::string(output_folder + "/GVAR_" + timestamp + "/IR-4.png").c_str());
+    std::cout << "Channel 4... " + getGvarFilename(timeReadable, 4) + ".png" << std::endl;
+    image3.save_png(std::string(disk_folder + "/" + getGvarFilename(timeReadable, 4) + ".png").c_str());
 
-    std::cout << "Channel 5..." << std::endl;
-    image5.save_png(std::string(output_folder + "/GVAR_" + timestamp + "/VIS.png").c_str());
+    std::cout << "Channel 5... " + getGvarFilename(timeReadable, 5) + ".png" << std::endl;
+    image4.save_png(std::string(disk_folder + "/" + getGvarFilename(timeReadable, 5) + ".png").c_str());
 
     writingImage = false;
 }

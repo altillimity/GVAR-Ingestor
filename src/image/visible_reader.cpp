@@ -51,7 +51,7 @@ void VisibleReader::pushFrame(uint8_t *data, int block, int counter)
     for (int i = 0; i < WIDTH; i++)
     {
         uint16_t pixel = imageLineBuffer[i];
-        imageBuffer[((counter * 8 + (block - 3)) * WIDTH) + i] = pixel * 60;
+        imageBuffer[((counter * 8 + (block - 3)) * WIDTH) + i] = pixel << 6;
         goodLines[counter * 8 + (block - 3)] = true;
     }
 }
