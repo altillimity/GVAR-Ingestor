@@ -53,16 +53,16 @@ void InfraredReader1::pushFrame(uint8_t *data, int block, int counter)
     // Deinterleave channel 1 and load into our image buffer
     for (int i = 0; i < WIDTH; i++)
     {
-        uint16_t pixel1 = imageLineBuffer[90 + i];
-        uint16_t pixel2 = imageLineBuffer[5316 + i];
+        uint16_t pixel1 = imageLineBuffer[94 + i];
+        uint16_t pixel2 = imageLineBuffer[5320 + i];
         imageBuffer1[((counter * 2 + 0) * WIDTH) + i] = pixel1 << 6;
         imageBuffer1[((counter * 2 + 1) * WIDTH) + i] = pixel2 << 6;
     }
 
     for (int i = 0; i < WIDTH; i++)
     {
-        uint16_t pixel1 = imageLineBuffer[10534 + i];
-        uint16_t pixel2 = imageLineBuffer[15760 + i];
+        uint16_t pixel1 = imageLineBuffer[10546 + i];
+        uint16_t pixel2 = imageLineBuffer[15772 + i];
         imageBuffer2[((counter * 2 + 0) * WIDTH) + i] = pixel1 << 6;
         imageBuffer2[((counter * 2 + 1) * WIDTH) + i] = pixel2 << 6;
     }
