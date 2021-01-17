@@ -67,7 +67,7 @@ void GVARDecoder::writeFullDisks()
     image5.resize(image5.width(), image5.height() * 1.75);
 
     std::cout << "Channel 1... " + getGvarFilename(timeReadable, 1) + ".png" << std::endl;
-    image5.save_png(std::string(disk_folder + "/" + getGvarFilename(timeReadable, 1) + ".png").c_str());
+    //image5.save_png(std::string(disk_folder + "/" + getGvarFilename(timeReadable, 1) + ".png").c_str());
 
     std::cout << "Channel 2... " + getGvarFilename(timeReadable, 2) + ".png" << std::endl;
     image1.save_png(std::string(disk_folder + "/" + getGvarFilename(timeReadable, 2) + ".png").c_str());
