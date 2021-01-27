@@ -1,13 +1,13 @@
 #include "infrared1_reader.h"
 
-#define WIDTH 5000
+#define WIDTH 5206
 #define HEIGHT (1354 * 2)
 
 InfraredReader1::InfraredReader1()
 {
     imageBuffer1 = new unsigned short[HEIGHT * WIDTH];
     imageBuffer2 = new unsigned short[HEIGHT * WIDTH];
-    imageLineBuffer = new unsigned short[20760];
+    imageLineBuffer = new unsigned short[23860];
     goodLines = new bool[HEIGHT];
 }
 
@@ -26,16 +26,17 @@ void InfraredReader1::startNewFullDisk()
     std::fill(&goodLines[0], &goodLines[HEIGHT], false);
 }
 
-//std::ofstream data_out("test.bin", std::ios::binary);
-
 void InfraredReader1::pushFrame(uint8_t *data, int block, int counter)
 {
+    // Get the current mode. Shifted?
+    bool status = data[8 + 30 + 3] >> 4 & 1;
+
     // Offset to start reading from
     int pos = 0;
     int posb = 4;
 
     // Convert to 10 bits values
-    for (int i = 0; i < 20760; i += 4)
+    for (int i = 0; i < 23860; i += 4)
     {
         byteBufShift[0] = data[pos + 0] << posb | data[pos + 1] >> (8 - posb);
         byteBufShift[1] = data[pos + 1] << posb | data[pos + 2] >> (8 - posb);
@@ -54,7 +55,7 @@ void InfraredReader1::pushFrame(uint8_t *data, int block, int counter)
     for (int i = 0; i < WIDTH; i++)
     {
         uint16_t pixel1 = imageLineBuffer[94 + i];
-        uint16_t pixel2 = imageLineBuffer[5316 + i];
+        uint16_t pixel2 = imageLineBuffer[(status ? 5316 : 5320) + i];
         imageBuffer1[((counter * 2 + 0) * WIDTH) + i] = pixel1 << 6;
         imageBuffer1[((counter * 2 + 1) * WIDTH) + i] = pixel2 << 6;
     }
@@ -62,9 +63,9 @@ void InfraredReader1::pushFrame(uint8_t *data, int block, int counter)
     for (int i = 0; i < WIDTH; i++)
     {
         uint16_t pixel1 = imageLineBuffer[10538 + i];
-        uint16_t pixel2 = imageLineBuffer[15760 + i];
+        uint16_t pixel2 = imageLineBuffer[(status ? 15760 : 15764) + i];
         imageBuffer2[((counter * 2 + 0) * WIDTH) + i] = pixel1 << 6;
-        imageBuffer2[((counter * 2 + 1) * WIDTH) + i] = pixel2 << 6;
+        imageBuffer2[((counter * 2 + 1) * WIDTH) + i] = (i >= (WIDTH - 44) && status) ? pixel1 << 6 : pixel2 << 6; // Some data is missing...
     }
 
     goodLines[counter * 2 + 0] = true;

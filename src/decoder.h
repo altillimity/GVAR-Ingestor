@@ -27,7 +27,7 @@ private:
     PNDerandomizer frameDerandomizer;
 
     // Deframer
-    SimpleDeframer<uint64_t, 64, 209200, 0b0001101111100111110100000001111110111111100000001111111111111110> gvarDeframer; // Crude but works
+    SimpleDeframer<uint64_t, 64, 262288, 0b0001101111100111110100000001111110111111100000001111111111111110> gvarDeframer; // Crude but works
     std::vector<std::vector<uint8_t>> gvarFrames;
 
     // Images used as a buffer when writing it out

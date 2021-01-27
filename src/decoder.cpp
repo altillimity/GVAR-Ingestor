@@ -106,10 +106,13 @@ void GVARDecoder::forceWriteFullDisks()
     visibleImageReader.startNewFullDisk();
 }
 
+#include <fstream>
+std::ofstream testFile("test2.bin");
+
 void GVARDecoder::processBuffer(uint8_t *buffer, int size)
 {
     // Perform diff decoding (NRZ-S)
-    //nrzsDecode(buffer, size);
+    nrzsDecode(buffer, size);
 
     // Run through the deframer
     gvarFrames = gvarDeframer.work(buffer, size);
@@ -117,10 +120,18 @@ void GVARDecoder::processBuffer(uint8_t *buffer, int size)
     for (std::vector<uint8_t> &frame : gvarFrames)
     {
         // Derandomize this frame
-        frameDerandomizer.derandData(frame.data(), 26150);
+        frameDerandomizer.derandData(frame.data(), 32786);
 
         // Get block number
         int block_number = frame[8];
+
+        //if (block_number == 11)
+        //{
+        //   uint16_t product = frame[12] << 8 | frame[13];
+        //   std::cout << product << std::endl;
+        //   if (product == 15)
+        //       testFile.write((char *)&frame.data()[8], 32786 - 8);
+        // }
 
         // IR Channels 1-2 (Reader 1)
         if (block_number == 1)
@@ -155,6 +166,7 @@ void GVARDecoder::processBuffer(uint8_t *buffer, int size)
         // VIS 1
         else if (block_number >= 3 && block_number <= 10)
         {
+            testFile.write((char *)&frame.data()[8], 32786 - 8);
             // Read counter
             uint16_t counter = frame[105] << 6 | frame[106] >> 2;
 

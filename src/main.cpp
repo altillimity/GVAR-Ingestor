@@ -255,7 +255,7 @@ int main(int argc, char *argv[])
         std::this_thread::sleep_for(std::chrono::seconds(2));
 
         // Dump incomplete data if we've got any
-        decoder.forceWriteFullDisks();
+        //decoder.forceWriteFullDisks();
 
         std::cout << "Done!" << std::endl;
 

@@ -1,6 +1,6 @@
 #include "visible_reader.h"
 
-#define WIDTH 20000
+#define WIDTH 20832 //30000//20824
 #define HEIGHT (1354 * 8)
 
 VisibleReader::VisibleReader()
@@ -25,12 +25,15 @@ void VisibleReader::startNewFullDisk()
 
 void VisibleReader::pushFrame(uint8_t *data, int block, int counter)
 {
+    // Get the current mode. Shifted?
+    bool status = data[8 + 30 + 3] >> 4 & 1;
+
     // Offset to start reading from
     int pos = 116;
     int posb = 6;
 
     // Convert to 10 bits values
-    for (int i = 0; i < WIDTH; i += 4)
+    for (int i = 0; i < WIDTH + 10; i += 4)
     {
         byteBufShift[0] = data[pos + 0] << posb | data[pos + 1] >> (8 - posb);
         byteBufShift[1] = data[pos + 1] << posb | data[pos + 2] >> (8 - posb);
@@ -48,9 +51,9 @@ void VisibleReader::pushFrame(uint8_t *data, int block, int counter)
     }
 
     // Deinterleave and load into our image buffer
-    for (int i = 0; i < WIDTH; i++)
+    for (int i = 0; i < WIDTH - (status ? 0 : 8); i++)
     {
-        uint16_t pixel = imageLineBuffer[i];
+        uint16_t pixel = imageLineBuffer[1 + i];
         imageBuffer[((counter * 8 + (block - 3)) * WIDTH) + i] = pixel << 6;
         goodLines[counter * 8 + (block - 3)] = true;
     }
@@ -66,8 +69,8 @@ cimg_library::CImg<unsigned short> VisibleReader::getImage()
         {
             for (int i = 0; i < WIDTH; i++)
             {
-                unsigned short& above = imageBuffer[((y - 1) * WIDTH) + i];
-                unsigned short& below = imageBuffer[((y + 1) * WIDTH) + i];
+                unsigned short &above = imageBuffer[((y - 1) * WIDTH) + i];
+                unsigned short &below = imageBuffer[((y + 1) * WIDTH) + i];
                 imageBuffer[(y * WIDTH) + i] = (above + below) / 2;
             }
         }
